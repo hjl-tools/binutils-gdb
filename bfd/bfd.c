@@ -62,7 +62,8 @@ CODE_FRAGMENT
 .    lto_non_object,
 .    lto_non_ir_object,
 .    lto_ir_object,
-.    lto_fat_ir_object
+.    lto_fat_ir_object,
+.    lto_mixed_object
 .  };
 .
 .struct bfd
@@ -245,7 +246,7 @@ CODE_FRAGMENT
 .  unsigned int lto_output : 1;
 .
 .  {* LTO object type.  *}
-.  ENUM_BITFIELD (bfd_lto_object_type) lto_type : 2;
+.  ENUM_BITFIELD (bfd_lto_object_type) lto_type : 3;
 .
 .  {* Set to dummy BFD created when claimed by a compiler plug-in
 .     library.  *}
@@ -271,6 +272,9 @@ CODE_FRAGMENT
 .
 .  {* The last section on the section list.  *}
 .  struct bfd_section *section_last;
+.
+.  {* The object-only section on the section list.  *}
+.  struct bfd_section *object_only_section;
 .
 .  {* The number of sections.  *}
 .  unsigned int section_count;
@@ -2636,4 +2640,42 @@ bfd_convert_section_contents (bfd *ibfd, sec_ptr isec, bfd *obfd,
 
   *ptr_size = size;
   return TRUE;
+}
+
+/*
+FUNCTION
+	bfd_group_signature
+
+SYNOPSIS
+	asymbol *bfd_group_signature (asection *group, asymbol **isympp);
+
+DESCRIPTION
+	Return a pointer to the symbol used as a signature for GROUP.
+*/
+
+asymbol *
+bfd_group_signature (asection *group, asymbol **isympp)
+{
+  bfd *abfd = group->owner;
+  Elf_Internal_Shdr *ghdr;
+
+  /* PR 20089: An earlier error may have prevented us from loading the
+     symbol table.  */
+  if (isympp == NULL)
+    return NULL;
+
+  if (bfd_get_flavour (abfd) != bfd_target_elf_flavour)
+    return NULL;
+
+  ghdr = &elf_section_data (group)->this_hdr;
+  if (ghdr->sh_link == elf_onesymtab (abfd))
+    {
+      const struct elf_backend_data *bed = get_elf_backend_data (abfd);
+      Elf_Internal_Shdr *symhdr = &elf_symtab_hdr (abfd);
+
+      if (ghdr->sh_info > 0
+	  && ghdr->sh_info < symhdr->sh_size / bed->s->sizeof_sym)
+	return isympp[ghdr->sh_info - 1];
+    }
+  return NULL;
 }

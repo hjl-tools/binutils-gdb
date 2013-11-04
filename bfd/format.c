@@ -203,11 +203,15 @@ bfd_set_lto_type (bfd *abfd ATTRIBUTE_UNUSED)
       enum bfd_lto_object_type type = lto_non_ir_object;
       for (sec = abfd->sections; sec != NULL; sec = sec->next)
 	{
-	  if (strncmp (sec->name, ".gnu.lto_", 9) == 0)
+	  if (strcmp (sec->name, GNU_OBJECT_ONLY_SECTION_NAME) == 0)
 	    {
-	      type = lto_ir_object;
+	      type = lto_mixed_object;
+	      abfd->object_only_section = sec;
 	      break;
 	    }
+	  else if (type != lto_ir_object
+		   && strncmp (sec->name, ".gnu.lto_", 9) == 0)
+	    type = lto_ir_object;
 	}
 
       /* FIXME: Check if it is a fat IR object.  */
