@@ -48,6 +48,8 @@ SUBSECTION
 #include "libbfd.h"
 #if BFD_SUPPORTS_PLUGINS
 #include "libiberty.h"
+#include "plugin-api.h"
+#include "plugin.h"
 #endif
 
 /* IMPORT from targets.c.  */
@@ -284,9 +286,6 @@ bfd_boolean
 bfd_check_format_matches (bfd *abfd, bfd_format format, char ***matching)
 {
   extern const bfd_target binary_vec;
-#if BFD_SUPPORTS_PLUGINS
-  extern const bfd_target plugin_vec;
-#endif
   const bfd_target * const *target;
   const bfd_target **matching_vector = NULL;
   const bfd_target *save_targ, *right_targ, *ar_right_targ, *match_targ;
@@ -372,6 +371,13 @@ bfd_check_format_matches (bfd *abfd, bfd_format format, char ***matching)
 	  || (!abfd->target_defaulted && *target == save_targ))
 	continue;
 
+#if BFD_SUPPORTS_PLUGINS
+      /* If the plugin target is explicitly specified when a BFD file
+	 is opened, don't check it twice.  */
+      if (bfd_plugin_specified_p () && bfd_plugin_target_p (*target))
+	continue;
+#endif
+
       /* If we already tried a match, the bfd is modified and may
 	 have sections attached, which will confuse the next
 	 _bfd_check_format call.  */
@@ -398,7 +404,7 @@ bfd_check_format_matches (bfd *abfd, bfd_format format, char ***matching)
 	     lowest priority; objects both handled by a plugin and
 	     with an underlying object format will be claimed
 	     separately by the plugin.  */
-	  if (*target == &plugin_vec)
+	  if (bfd_plugin_target_p (*target))
 	    match_priority = (*target)->match_priority;
 #endif
 
