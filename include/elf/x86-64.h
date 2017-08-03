@@ -85,6 +85,7 @@ START_RELOC_NUMBERS (elf_x86_64_reloc_type)
      /* Similar to R_X86_64_REX_GOTPCRELX, except for it is only used
         to convert function call via GOT slot with a scratch register.  */
      RELOC_NUMBER (R_X86_64_THUNK_GOTPCRELX, 43)
+     RELOC_NUMBER (R_X86_64_GPOFF,    44)     /* 32 bit offset to __gp  */
      RELOC_NUMBER (R_X86_64_GNU_VTINHERIT, 250)       /* GNU C++ hack  */
      RELOC_NUMBER (R_X86_64_GNU_VTENTRY, 251)         /* GNU C++ hack  */
 END_RELOC_NUMBERS (R_X86_64_max)
