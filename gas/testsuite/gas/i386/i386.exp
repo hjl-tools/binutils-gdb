@@ -538,6 +538,9 @@ if [expr ([istarget "i*86-*-*"] ||  [istarget "x86_64-*-*"]) && [gas_32_check]] 
 	    run_list_test "code64-inval" "-I${srcdir}/$subdir -al"
 	}
 
+	run_dump_test "gpoff"
+	run_list_test "inval-gpoff" "-al"
+
 	if {![istarget "*-*-nacl*"]} then {
 	    run_dump_test "iamcu-1"
 	    run_dump_test "iamcu-2"
@@ -1025,6 +1028,9 @@ if [expr ([istarget "i*86-*-*"] || [istarget "x86_64-*-*"]) && [gas_64_check]] t
 	run_dump_test "x86-64-nop-6"
 
 	run_dump_test "evex-no-scale-64"
+
+	run_dump_test "x86-64-gpoff"
+	run_list_test "x86-64-inval-gpoff" "-al"
     }
 
     set ASFLAGS "$old_ASFLAGS"
