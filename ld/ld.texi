@@ -1188,6 +1188,10 @@ Lazy binding is the default.
 @item loadfltr
 Specify that the object's filters be processed immediately at runtime.
 
+@item nosecondary
+Convert secondary symbols to weak symbols when generating a shared
+library.
+
 @item max-page-size=@var{value}
 Set the maximum memory page size supported to @var{value}.
 

@@ -4953,6 +4953,10 @@ error_free_dyn:
 	  flags = BSF_WEAK;
 	  break;
 
+	case STB_SECONDARY:
+	  flags = BSF_SECONDARY;
+	  break;
+
 	case STB_GNU_UNIQUE:
 	  flags = BSF_GNU_UNIQUE;
 	  break;
