@@ -1165,7 +1165,8 @@ class Target_x86_64 : public Sized_target<size, false>
     // We cannot do the conversion unless it's one of these relocations.
     if (r_type != elfcpp::R_X86_64_GOTPCREL
         && r_type != elfcpp::R_X86_64_GOTPCRELX
-        && r_type != elfcpp::R_X86_64_REX_GOTPCRELX)
+        && r_type != elfcpp::R_X86_64_REX_GOTPCRELX
+        && r_type != elfcpp::R_X86_64_THUNK_GOTPCRELX)
       return false;
     // We cannot convert references to IFUNC symbols, or to symbols that
     // are not local to the current module.
@@ -3388,6 +3389,7 @@ Target_x86_64<size>::Scan::get_reference_flags(unsigned int r_type)
     case elfcpp::R_X86_64_GOTPCREL:
     case elfcpp::R_X86_64_GOTPCRELX:
     case elfcpp::R_X86_64_REX_GOTPCRELX:
+    case elfcpp::R_X86_64_THUNK_GOTPCRELX:
     case elfcpp::R_X86_64_GOTPLT64:
       // Absolute in GOT.
       return Symbol::ABSOLUTE_REF;
@@ -3674,6 +3676,7 @@ Target_x86_64<size>::Scan::local(Symbol_table* symtab,
     case elfcpp::R_X86_64_GOTPCREL:
     case elfcpp::R_X86_64_GOTPCRELX:
     case elfcpp::R_X86_64_REX_GOTPCRELX:
+    case elfcpp::R_X86_64_THUNK_GOTPCRELX:
     case elfcpp::R_X86_64_GOTPLT64:
       {
 	// The symbol requires a GOT section.
@@ -3687,7 +3690,8 @@ Target_x86_64<size>::Scan::local(Symbol_table* symtab,
 	if (!parameters->incremental()
 	    && (r_type == elfcpp::R_X86_64_GOTPCREL
 		|| r_type == elfcpp::R_X86_64_GOTPCRELX
-		|| r_type == elfcpp::R_X86_64_REX_GOTPCRELX)
+		|| r_type == elfcpp::R_X86_64_REX_GOTPCRELX
+		|| r_type == elfcpp::R_X86_64_THUNK_GOTPCRELX)
 	    && reloc.get_r_offset() >= 2
 	    && !is_ifunc)
 	  {
@@ -3920,6 +3924,7 @@ Target_x86_64<size>::Scan::possible_function_pointer_reloc(
     case elfcpp::R_X86_64_GOTPCREL:
     case elfcpp::R_X86_64_GOTPCRELX:
     case elfcpp::R_X86_64_REX_GOTPCRELX:
+    case elfcpp::R_X86_64_THUNK_GOTPCRELX:
     case elfcpp::R_X86_64_GOTPLT64:
       {
 	return true;
@@ -4151,6 +4156,7 @@ Target_x86_64<size>::Scan::global(Symbol_table* symtab,
     case elfcpp::R_X86_64_GOTPCREL:
     case elfcpp::R_X86_64_GOTPCRELX:
     case elfcpp::R_X86_64_REX_GOTPCRELX:
+    case elfcpp::R_X86_64_THUNK_GOTPCRELX:
     case elfcpp::R_X86_64_GOTPLT64:
       {
 	// The symbol requires a GOT entry.
@@ -4862,6 +4868,7 @@ Target_x86_64<size>::Relocate::relocate(
     case elfcpp::R_X86_64_GOTPCREL:
     case elfcpp::R_X86_64_GOTPCRELX:
     case elfcpp::R_X86_64_REX_GOTPCRELX:
+    case elfcpp::R_X86_64_THUNK_GOTPCRELX:
       {
       // Convert
       // mov foo@GOTPCREL(%rip), %reg
