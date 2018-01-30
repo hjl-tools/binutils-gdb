@@ -259,6 +259,9 @@ struct elf_x86_link_hash_entry
   /* TRUE if symbol is defined by linker.  */
   unsigned int linker_def : 1;
 
+  /* TRUE if symbol needs LD_AUDIT support for indirect call via GOT.  */
+  unsigned int got_audit : 1;
+
   /* TRUE if symbol is referenced by R_386_GOTOFF relocation.  This is
      only used by i386.  */
   unsigned int gotoff_ref : 1;
@@ -482,6 +485,15 @@ struct elf_x86_link_hash_table
    /* Value used to fill the unused bytes of the first PLT entry.  This
       is only used for i386.  */
   bfd_byte plt0_pad_byte;
+   /* Size of the unused bytes of the first PLT entry.  This is only used
+      for i386.  */
+  unsigned int plt0_pad_size;
+
+  /* TRUE if DT_JMPREL is required.  */
+  unsigned int jmprel_required : 1;
+
+  /* TRUE if LD_AUDIT support for indirect call via GOT is needed.  */
+  unsigned int got_audit : 1;
 
   /* TRUE if GOT is referenced.  */
   unsigned int got_referenced : 1;

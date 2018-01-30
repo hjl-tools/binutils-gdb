@@ -3,6 +3,7 @@
 . ${srcdir}/emulparams/dynamic_undefined_weak.sh
 . ${srcdir}/emulparams/call_nop.sh
 . ${srcdir}/emulparams/cet.sh
+. ${srcdir}/emulparams/audit_got.sh
 SCRIPT_NAME=elf
 OUTPUT_FORMAT="elf32-i386"
 NO_RELA_RELOCS=yes

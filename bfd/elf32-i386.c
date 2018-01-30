@@ -1617,6 +1617,17 @@ elf_i386_check_relocs (bfd *abfd,
 	  size_reloc = TRUE;
 	  goto do_size;
 
+	case R_386_GOT32:
+	case R_386_GOT32X:
+	   /* Support LD_AUDIT of indirect call via GOT.  */
+	  if (info->audit_got
+	      && h != NULL
+	      && h->type == STT_FUNC
+	      && !h->def_regular
+	      && h->def_dynamic)
+	    eh->got_audit = 1;
+	  goto check_got;
+
 	case R_386_TLS_IE_32:
 	case R_386_TLS_IE:
 	case R_386_TLS_GOTIE:
@@ -1624,11 +1635,10 @@ elf_i386_check_relocs (bfd *abfd,
 	    info->flags |= DF_STATIC_TLS;
 	  /* Fall through */
 
-	case R_386_GOT32:
-	case R_386_GOT32X:
 	case R_386_TLS_GD:
 	case R_386_TLS_GOTDESC:
 	case R_386_TLS_DESC_CALL:
+check_got:
 	  /* This symbol requires a global offset table entry.  */
 	  {
 	    int tls_type, old_tls_type;
@@ -4041,8 +4051,7 @@ elf_i386_finish_dynamic_sections (bfd *output_bfd,
 	  memcpy (htab->elf.splt->contents, htab->plt.plt0_entry,
 		  htab->lazy_plt->plt0_entry_size);
 	  memset (htab->elf.splt->contents + htab->lazy_plt->plt0_entry_size,
-		  htab->plt0_pad_byte,
-		  htab->plt.plt_entry_size - htab->lazy_plt->plt0_entry_size);
+		  htab->plt0_pad_byte, htab->plt0_pad_size);
 	  if (!bfd_link_pic (info))
 	    {
 	      bfd_put_32 (output_bfd,

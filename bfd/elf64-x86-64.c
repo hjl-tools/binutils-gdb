@@ -1952,6 +1952,17 @@ elf_x86_64_check_relocs (bfd *abfd, struct bfd_link_info *info,
 	    eh->zero_undefweak &= 0x2;
 	  break;
 
+	case R_X86_64_GOTPCRELX:
+	case R_X86_64_REX_GOTPCRELX:
+	  /* Support LD_AUDIT of indirect call via GOT.  */
+	  if (info->audit_got
+	      && h != NULL
+	      && h->type == STT_FUNC
+	      && !h->def_regular
+	      && h->def_dynamic)
+	    eh->got_audit = 1;
+	  goto check_got;
+
 	case R_X86_64_GOTTPOFF:
 	  if (!bfd_link_executable (info))
 	    info->flags |= DF_STATIC_TLS;
@@ -1959,8 +1970,6 @@ elf_x86_64_check_relocs (bfd *abfd, struct bfd_link_info *info,
 
 	case R_X86_64_GOT32:
 	case R_X86_64_GOTPCREL:
-	case R_X86_64_GOTPCRELX:
-	case R_X86_64_REX_GOTPCRELX:
 	case R_X86_64_TLSGD:
 	case R_X86_64_GOT64:
 	case R_X86_64_GOTPCREL64:
@@ -1968,6 +1977,7 @@ elf_x86_64_check_relocs (bfd *abfd, struct bfd_link_info *info,
 	case R_X86_64_GOTPC32_TLSDESC:
 	case R_X86_64_TLSDESC_CALL:
 	  /* This symbol requires a global offset table entry.	*/
+check_got:
 	  {
 	    int tls_type, old_tls_type;
 

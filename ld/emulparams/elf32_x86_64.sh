@@ -4,6 +4,7 @@
 . ${srcdir}/emulparams/reloc_overflow.sh
 . ${srcdir}/emulparams/call_nop.sh
 . ${srcdir}/emulparams/cet.sh
+. ${srcdir}/emulparams/audit_got.sh
 SCRIPT_NAME=elf
 ELFSIZE=32
 OUTPUT_FORMAT="elf32-x86-64"

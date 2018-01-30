@@ -91,6 +91,8 @@ elf_x86_allocate_dynrelocs (struct elf_link_hash_entry *h, void *inf)
   struct elf_dyn_relocs *p;
   unsigned int plt_entry_size;
   bfd_boolean resolved_to_zero;
+  bfd_boolean need_plt;
+  bfd_boolean need_got_audit;
   const struct elf_backend_data *bed;
 
   if (h->root.type == bfd_link_hash_indirect)
@@ -149,16 +151,33 @@ elf_x86_allocate_dynrelocs (struct elf_link_hash_entry *h, void *inf)
 	      s->size += htab->non_lazy_plt->plt_entry_size;
 	    }
 
+	  /* Mark DT_JMPREL as required.  */
+	  htab->jmprel_required = TRUE;
+
 	  return TRUE;
 	}
       else
 	return FALSE;
     }
-  /* Don't create the PLT entry if there are only function pointer
-     relocations which can be resolved at run-time.  */
-  else if (htab->elf.dynamic_sections_created
-	   && (h->plt.refcount > 0
-	       || eh->plt_got.refcount > 0))
+
+  need_plt = FALSE;
+  need_got_audit = FALSE;
+  if (htab->elf.dynamic_sections_created)
+    {
+      /* Don't create the PLT entry if there are only function pointer
+	 relocations which can be resolved at run-time.  */
+      if (h->plt.refcount > 0 || eh->plt_got.refcount > 0)
+	need_plt = TRUE;
+      else if (eh->got_audit && h->type == STT_FUNC)
+	{
+	  /* Force the PLT entry to support LD_AUDIT of indirect call
+	     via GOT.  */
+	  need_plt = TRUE;
+	  need_got_audit = TRUE;
+	}
+    }
+
+  if (need_plt)
     {
       bfd_boolean use_plt_got = eh->plt_got.refcount > 0;
 
@@ -238,7 +257,8 @@ elf_x86_allocate_dynrelocs (struct elf_link_hash_entry *h, void *inf)
 	  /* Make room for this entry.  */
 	  if (use_plt_got)
 	    got_s->size += htab->non_lazy_plt->plt_entry_size;
-	  else
+
+	  if (!use_plt_got || need_got_audit)
 	    {
 	      s->size += plt_entry_size;
 	      if (second_s)
@@ -280,15 +300,19 @@ elf_x86_allocate_dynrelocs (struct elf_link_hash_entry *h, void *inf)
 
 	      srelplt2->size += (htab->sizeof_reloc * 2);
 	    }
+
+	  /* DT_JMPREL isn't required if PLT is created only to support
+	     LD_AUDIT of indirect call via GOT.  */
+	  if (need_got_audit)
+	    htab->got_audit = TRUE;
+	  else
+	    htab->jmprel_required = TRUE;
 	}
       else
-	{
-	  eh->plt_got.offset = (bfd_vma) -1;
-	  h->plt.offset = (bfd_vma) -1;
-	  h->needs_plt = 0;
-	}
+	need_plt = FALSE;
     }
-  else
+
+  if (!need_plt)
     {
       eh->plt_got.offset = (bfd_vma) -1;
       h->plt.offset = (bfd_vma) -1;
@@ -1285,6 +1309,20 @@ _bfd_x86_elf_size_dynamic_sections (bfd *output_bfd,
 	     relocation.  */
 	  if (!add_dynamic_entry (DT_PLTGOT, 0))
 	    return FALSE;
+
+	  if (htab->got_audit)
+	    {
+	      if (!add_dynamic_entry (DT_GNU_PLT, 0)
+		  || !add_dynamic_entry (DT_GNU_PLTSZ, 0)
+		  || !add_dynamic_entry (DT_GNU_PLTENT, 0)
+		  || !add_dynamic_entry (DT_GNU_PLT0SZ, 0)
+		  || !add_dynamic_entry (DT_GNU_PLTGOTSZ, 0))
+		return FALSE;
+
+	      /* Set DF_1_JMPRELIGN if DT_JMPREL isn't required.  */
+	      if (!htab->jmprel_required)
+		info->flags_1 |= (bfd_vma) DF_1_JMPRELIGN;
+	    }
 	}
 
       if (htab->elf.srelplt->size != 0)
@@ -1449,6 +1487,30 @@ _bfd_x86_elf_finish_dynamic_sections (bfd *output_bfd,
 	  s = htab->elf.sgot;
 	  dyn.d_un.d_ptr = s->output_section->vma + s->output_offset
 	    + htab->tlsdesc_got;
+	  break;
+
+	case DT_GNU_PLT:
+	  s = htab->elf.splt;
+	  dyn.d_un.d_ptr = s->output_section->vma + s->output_offset;
+	  break;
+
+	case DT_GNU_PLTSZ:
+	  s = htab->elf.splt->output_section;
+	  dyn.d_un.d_val = s->size;
+	  break;
+
+	case DT_GNU_PLTENT:
+	  dyn.d_un.d_val = htab->lazy_plt->plt_entry_size;
+	  break;
+
+	case DT_GNU_PLT0SZ:
+	  dyn.d_un.d_val = (htab->lazy_plt->plt0_entry_size
+			    + htab->plt0_pad_size);
+	  break;
+
+	case DT_GNU_PLTGOTSZ:
+	  s = htab->elf.sgotplt->output_section;
+	  dyn.d_un.d_val = s->size;
 	  break;
 	}
 
@@ -2597,6 +2659,9 @@ error_alignment:
 	= htab->lazy_plt->eh_frame_plt_size;
       htab->plt.eh_frame_plt = htab->lazy_plt->eh_frame_plt;
     }
+
+  htab->plt0_pad_size = (htab->plt.plt_entry_size
+			 - htab->lazy_plt->plt0_entry_size);
 
   if (htab->target_os == is_vxworks
       && !elf_vxworks_create_dynamic_sections (dynobj, info,

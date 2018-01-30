@@ -914,6 +914,10 @@
    deliberate special case and we maintain it for backwards compatability.
  */
 #define DT_VALRNGLO	0x6ffffd00
+#define DT_GNU_PLTSZ	0x6ffffdf1	/* Size of PLT section  */
+#define DT_GNU_PLTENT	0x6ffffdf2	/* Size of one PLT entry  */
+#define DT_GNU_PLT0SZ	0x6ffffdf3	/* Size of the first PLT entry  */
+#define DT_GNU_PLTGOTSZ	0x6ffffdf4	/* Size of PLTGOT section  */
 #define DT_GNU_PRELINKED 0x6ffffdf5
 #define DT_GNU_CONFLICTSZ 0x6ffffdf6
 #define DT_GNU_LIBLISTSZ 0x6ffffdf7
@@ -928,6 +932,7 @@
 #define DT_VALRNGHI	0x6ffffdff
 
 #define DT_ADDRRNGLO	0x6ffffe00
+#define DT_GNU_PLT	0x6ffffef4	/* Address of PLT section  */
 #define DT_GNU_HASH	0x6ffffef5
 #define DT_TLSDESC_PLT	0x6ffffef6
 #define DT_TLSDESC_GOT	0x6ffffef7
@@ -1006,6 +1011,7 @@
 #define	DF_1_SINGLETON	0x02000000
 #define	DF_1_STUB	0x04000000
 #define	DF_1_PIE	0x08000000
+#define	DF_1_JMPRELIGN	0x10000000
 
 /* Flag values for the DT_FLAGS entry.	*/
 #define DF_ORIGIN	(1 << 0)

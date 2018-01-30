@@ -2140,6 +2140,11 @@ get_dynamic_type (Filedata * filedata, unsigned long type)
     case DT_GNU_LIBLIST: return "GNU_LIBLIST";
     case DT_GNU_LIBLISTSZ: return "GNU_LIBLISTSZ";
     case DT_GNU_HASH:	return "GNU_HASH";
+    case DT_GNU_PLT:	return "GNU_PLT";
+    case DT_GNU_PLTSZ:	return "GNU_PLTSZ";
+    case DT_GNU_PLTENT: return "GNU_PLTENT";
+    case DT_GNU_PLT0SZ: return "GNU_PLT0SZ";
+    case DT_GNU_PLTGOTSZ: return "GNU_PLTGOTSZ";
 
     default:
       if ((type >= DT_LOPROC) && (type <= DT_HIPROC))
@@ -10009,6 +10014,11 @@ process_dynamic_section (Filedata * filedata)
 		      printf (" PIE");
 		      val ^= DF_1_PIE;
 		    }
+		  if (val & DF_1_JMPRELIGN)
+		    {
+		      printf (" JMPRELIGN");
+		      val ^= DF_1_JMPRELIGN;
+		    }
 		  if (val != 0)
 		    printf (" %lx", val);
 		  puts ("");
@@ -10101,6 +10111,10 @@ process_dynamic_section (Filedata * filedata)
 	case DT_FINI_ARRAYSZ:
 	case DT_GNU_CONFLICTSZ:
 	case DT_GNU_LIBLISTSZ:
+	case DT_GNU_PLTSZ:
+	case DT_GNU_PLTENT:
+	case DT_GNU_PLT0SZ:
+	case DT_GNU_PLTGOTSZ:
 	  if (do_dynamic)
 	    {
 	      print_vma (entry->d_un.d_val, UNSIGNED);
@@ -10125,6 +10139,7 @@ process_dynamic_section (Filedata * filedata)
 	case DT_USED:
 	case DT_INIT_ARRAY:
 	case DT_FINI_ARRAY:
+	case DT_GNU_PLT:
 	  if (do_dynamic)
 	    {
 	      if (entry->d_tag == DT_USED
