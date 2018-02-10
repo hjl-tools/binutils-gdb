@@ -298,7 +298,7 @@ elf_x86_allocate_dynrelocs (struct elf_link_hash_entry *h, void *inf)
   eh->tlsdesc_got = (bfd_vma) -1;
 
   /* For i386, if R_386_TLS_{IE_32,IE,GOTIE} symbol is now local to the
-     binary, make it a R_386_TLS_LE_32 requiring no TLS entry.  For
+     binary, make it a R_386_TLS_{LE_32,LE} requiring no TLS entry.  For
      x86-64, if R_X86_64_GOTTPOFF symbol is now local to the binary,
      make it a R_X86_64_TPOFF32 requiring no GOT entry.  */
   if (h->got.refcount > 0
