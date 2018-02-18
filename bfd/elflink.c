@@ -9725,8 +9725,26 @@ elf_link_output_extsym (struct bfd_hash_entry *bh, void *data)
       sym.st_shndx = SHN_UNDEF;
       break;
 
-    case bfd_link_hash_defined:
     case bfd_link_hash_defweak:
+      if (bfd_link_relocatable (flinfo->info))
+	{
+	  asection *output_sec
+	    = h->root.u.def.section->output_section;
+	  if (elf_section_type (output_sec) == SHT_GROUP
+	      && (output_sec->flags & SEC_EXCLUDE) != 0)
+	    {
+	      /* Since before Solaris 11 build 154, Sun ld rejects
+		 local group signature symbols, they are created as
+		 weak hidden symbols instead.  Mark them as undefined
+		 if group sectionas have been removed.  */
+	      input_sec = bfd_und_section_ptr;
+	      sym.st_shndx = SHN_UNDEF;
+	      break;
+	    }
+	}
+      /* Fall through.  */
+
+    case bfd_link_hash_defined:
       {
 	input_sec = h->root.u.def.section;
 	if (input_sec->output_section != NULL)
