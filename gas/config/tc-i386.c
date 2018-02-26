@@ -617,7 +617,7 @@ static int optimize = 0;
    3. Above plus optimize "test{q,l,w} $imm8,%r{64,32,16}" to
       "testb $imm7,%r8".
  */
-static int optimize_for_space = 0;
+static int optimize_for_space = -1;
 
 /* Register prefix used for error message.  */
 static const char *register_prefix = "%";
@@ -2908,6 +2908,40 @@ md_begin (void)
     {
       x86_dwarf2_return_column = 8;
       x86_cie_data_alignment = -4;
+    }
+
+  if (optimize_for_space < 0)
+    {
+      optimize = 0;
+      optimize_for_space = 0;
+#ifdef DEFAULT_OPTIMIZATION
+      {
+	/* Set default optimization from DEFAULT_OPTIMIZATION.  */
+	const char *default_optimization = DEFAULT_OPTIMIZATION;
+	if (*default_optimization == '-')
+	  default_optimization++;
+	if (*default_optimization == 'O')
+	  {
+	    default_optimization++;
+	    if (*default_optimization == 's')
+	      {
+		optimize_for_space = 1;
+		/* Turn on all encoding optimizations.  */
+		optimize = -1;
+	      }
+	    else
+	      {
+		/* Turn off -Os.  */
+		optimize_for_space = 0;
+
+		if (*default_optimization != '\0')
+		  optimize = atoi (default_optimization);
+		else
+		  optimize = 0;
+	      }
+	  }
+      }
+#endif
     }
 }
 

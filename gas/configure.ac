@@ -118,6 +118,18 @@ AC_ARG_WITH(cpu,
                                 [Target specific CPU.])],
             [])
 
+# PR gas/22871
+dnl Option --with-optimization=OPTION allows configure-time control of the
+dnl default optimization type within the assembler.  Currently only the
+dnl x88 target supports this feature, but others may be added in the
+dnl future.
+# Provide a configure time option to override our default.
+ac_default_optimization=unset
+AC_ARG_WITH(optimization,
+	    AS_HELP_STRING([--with-optimization=OPTION],
+            [default optimization is OPTION (currently only supported on x86)]),
+ac_default_optimization=$with_optimization)dnl
+
 # PR 14072
 AH_VERBATIM([00_CONFIG_H_CHECK],
 [/* Check that config.h is #included before system headers
@@ -601,6 +613,14 @@ fi
 AC_DEFINE_UNQUOTED(DEFAULT_GENERATE_X86_RELAX_RELOCATIONS,
   $ac_default_x86_relax_relocations,
   [Define to 1 if you want to generate x86 relax relocations by default.])
+
+if test ${ac_default_optimization} = unset; then
+  ac_default_optimization=no
+fi
+if test ${ac_default_optimization} != no; then
+  AC_DEFINE_UNQUOTED(DEFAULT_OPTIMIZATION, "$ac_default_optimization",
+    [Define default optimization.])
+fi
 
 if test ${ac_default_elf_stt_common} = unset; then
   ac_default_elf_stt_common=0
