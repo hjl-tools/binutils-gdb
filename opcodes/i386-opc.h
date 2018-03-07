@@ -604,8 +604,6 @@ enum
   /* Support encoding optimization.  */
   Optimize,
 
-  /* Compatible with old (<= 2.8.1) versions of gcc  */
-  OldGcc,
   /* AT&T mnemonic.  */
   ATTMnemonic,
   /* AT&T syntax.  */
@@ -682,7 +680,6 @@ typedef struct i386_opcode_modifier
   unsigned int nodefmask:1;
   unsigned int implicitquadgroup:1;
   unsigned int optimize:1;
-  unsigned int oldgcc:1;
   unsigned int attmnemonic:1;
   unsigned int attsyntax:1;
   unsigned int intelsyntax:1;
