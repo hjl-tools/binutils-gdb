@@ -468,6 +468,8 @@ enum
   ToQword,
   /* Address prefix changes operand 0 */
   AddrPrefixOp0,
+  /* Address prefix changes register operand */
+  AddrPrefixOpReg,
   /* opcode is a prefix */
   IsPrefix,
   /* instruction has extension in 8 bit imm */
@@ -651,6 +653,7 @@ typedef struct i386_opcode_modifier
   unsigned int todword:1;
   unsigned int toqword:1;
   unsigned int addrprefixop0:1;
+  unsigned int addrprefixopreg:1;
   unsigned int isprefix:1;
   unsigned int immext:1;
   unsigned int norex64:1;
