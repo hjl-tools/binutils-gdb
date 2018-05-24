@@ -2140,6 +2140,7 @@ get_dynamic_type (Filedata * filedata, unsigned long type)
     case DT_RELACOUNT:	return "RELACOUNT";
     case DT_RELCOUNT:	return "RELCOUNT";
     case DT_FLAGS_1:	return "FLAGS_1";
+    case DT_FLAGS_2:	return "FLAGS_2";
     case DT_VERDEF:	return "VERDEF";
     case DT_VERDEFNUM:	return "VERDEFNUM";
     case DT_VERNEED:	return "VERNEED";
@@ -10077,6 +10078,28 @@ process_dynamic_section (Filedata * filedata)
 		    {
 		      printf (" NOCOMMON");
 		      val ^= DF_1_NOCOMMON;
+		    }
+		  if (val != 0)
+		    printf (" %lx", val);
+		  puts ("");
+		}
+	    }
+	  break;
+
+	case DT_FLAGS_2:
+	  if (do_dynamic)
+	    {
+	      printf (_("Flags:"));
+	      if (entry->d_un.d_val == 0)
+		printf (_(" None\n"));
+	      else
+		{
+		  unsigned long int val = entry->d_un.d_val;
+
+		  if (val & DF_2_GNU_IFUNC)
+		    {
+		      printf (" IFUNC");
+		      val ^= DF_2_GNU_IFUNC;
 		    }
 		  if (val != 0)
 		    printf (" %lx", val);

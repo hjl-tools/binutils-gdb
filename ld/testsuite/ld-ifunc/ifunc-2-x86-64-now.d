@@ -11,12 +11,12 @@
 Disassembly of section .plt:
 
 0+1f0 <.plt>:
- +[a-f0-9]+:	ff 35 42 01 20 00    	pushq  0x200142\(%rip\)        # 200338 <_GLOBAL_OFFSET_TABLE_\+0x8>
- +[a-f0-9]+:	ff 25 44 01 20 00    	jmpq   \*0x200144\(%rip\)        # 200340 <_GLOBAL_OFFSET_TABLE_\+0x10>
+ +[a-f0-9]+:	ff 35 52 01 20 00    	pushq  0x200152\(%rip\)        # 200348 <_GLOBAL_OFFSET_TABLE_\+0x8>
+ +[a-f0-9]+:	ff 25 54 01 20 00    	jmpq   \*0x200154\(%rip\)        # 200350 <_GLOBAL_OFFSET_TABLE_\+0x10>
  +[a-f0-9]+:	0f 1f 40 00          	nopl   0x0\(%rax\)
 
 0+200 <\*ABS\*\+0x210@plt>:
- +[a-f0-9]+:	ff 25 42 01 20 00    	jmpq   \*0x200142\(%rip\)        # 200348 <_GLOBAL_OFFSET_TABLE_\+0x18>
+ +[a-f0-9]+:	ff 25 52 01 20 00    	jmpq   \*0x200152\(%rip\)        # 200358 <_GLOBAL_OFFSET_TABLE_\+0x18>
  +[a-f0-9]+:	68 00 00 00 00       	pushq  \$0x0
  +[a-f0-9]+:	e9 e0 ff ff ff       	jmpq   1f0 <.plt>
 

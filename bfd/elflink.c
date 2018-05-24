@@ -6893,6 +6893,18 @@ bfd_elf_size_dynamic_sections (bfd *output_bfd,
 	    return FALSE;
 	}
 
+      /* Set DF_2_GNU_IFUNC if there are GNU IFUNC symbols in
+	 shared objects or executables with interpreter.  */
+      if ((bfd_link_dll (info) || !info->nointerp)
+	  && (elf_tdata (output_bfd)->has_gnu_symbols
+	      & elf_gnu_symbol_ifunc))
+	info->flags_2 |= DF_2_GNU_IFUNC;
+
+      if (info->flags_2
+	  && !_bfd_elf_add_dynamic_entry (info, DT_FLAGS_2,
+					  info->flags_2))
+	return FALSE;
+
       if (elf_tdata (output_bfd)->cverrefs)
 	{
 	  unsigned int crefs = elf_tdata (output_bfd)->cverrefs;

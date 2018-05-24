@@ -29,8 +29,8 @@ Disassembly of section .text:
 0+171 <bar>:
  +[a-f0-9]+:	e8 00 00 00 00       	call   176 <bar\+0x5>
  +[a-f0-9]+:	5b                   	pop    %ebx
- +[a-f0-9]+:	81 c3 9e 10 00 00    	add    \$0x109e,%ebx
+ +[a-f0-9]+:	81 c3 a6 10 00 00    	add    \$0x10a6,%ebx
  +[a-f0-9]+:	e8 de ff ff ff       	call   160 <\*ABS\*@plt>
- +[a-f0-9]+:	8d 83 4c ef ff ff    	lea    -0x10b4\(%ebx\),%eax
+ +[a-f0-9]+:	8d 83 44 ef ff ff    	lea    -0x10bc\(%ebx\),%eax
  +[a-f0-9]+:	c3                   	ret    
 #pass

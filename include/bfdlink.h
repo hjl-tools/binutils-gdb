@@ -630,6 +630,9 @@ struct bfd_link_info
   /* May be used to set DT_FLAGS_1 for ELF. */
   bfd_vma flags_1;
 
+  /* May be used to set DT_FLAGS_2 for ELF. */
+  bfd_vma flags_2;
+
   /* Start and end of RELRO region.  */
   bfd_vma relro_start, relro_end;
 

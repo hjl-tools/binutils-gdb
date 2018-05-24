@@ -957,6 +957,8 @@
 /* This tag is a GNU extension to the Solaris version scheme.  */
 #define DT_VERSYM	0x6ffffff0
 
+#define DT_FLAGS_2	0x6ffffff1
+
 #define DT_LOPROC	0x70000000
 #define DT_HIPROC	0x7fffffff
 
@@ -1014,6 +1016,9 @@
 #define	DF_1_KMOD	0x10000000
 #define	DF_1_WEAKFILTER	0x20000000
 #define	DF_1_NOCOMMON	0x40000000
+
+/* Flag value in in the DT_FLAGS_2 .dynamic entry.  */
+#define DF_2_GNU_IFUNC	0x00000001
 
 /* Flag values for the DT_FLAGS entry.	*/
 #define DF_ORIGIN	(1 << 0)
