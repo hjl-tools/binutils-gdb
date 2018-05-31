@@ -56,16 +56,16 @@ Disassembly of section \.dat[0-9a-f ]+:
 [0-9A-F ]+isassembly of section \.got:
 
 [0-9a-f ]+<.got>:
-[0-9a-f ]+:	00 00 04 a4 	.*
+[0-9a-f ]+:	00 00 04 3c 	.*
 [0-9a-f	 ]+: R_FRV_FUNCDESC_VALUE	GF9
 [0-9a-f ]+:	00 00 00 00 	.*
-[0-9a-f ]+:	00 00 04 9c 	.*
+[0-9a-f ]+:	00 00 04 34 	.*
 [0-9a-f	 ]+: R_FRV_FUNCDESC_VALUE	GF8
 [0-9a-f ]+:	00 00 00 00 	.*
-[0-9a-f ]+:	00 00 04 ac 	.*
+[0-9a-f ]+:	00 00 04 44 	.*
 [0-9a-f	 ]+: R_FRV_FUNCDESC_VALUE	GF7
 [0-9a-f ]+:	00 00 00 00 	.*
-[0-9a-f ]+:	00 00 04 94 	.*
+[0-9a-f ]+:	00 00 04 2c 	.*
 [0-9a-f	 ]+: R_FRV_FUNCDESC_VALUE	GF0
 [0-9a-f ]+:	00 00 00 00 	.*
 
