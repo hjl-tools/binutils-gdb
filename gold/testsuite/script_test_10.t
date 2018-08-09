@@ -30,5 +30,6 @@ SECTIONS
   .sec3 : { *(.sec3) }
   .data : { *(.data) }
   .bss : { *(.bss) }
+  /DISCARD/ : { *(.note.gnu.property) }
 }
 
