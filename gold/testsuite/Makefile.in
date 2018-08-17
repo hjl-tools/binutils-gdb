@@ -2763,9 +2763,11 @@ editcc = -e 's/\([^ ]*\)\(.*\)/\1 -Bgcctestdir\/\2/'
 editcc1 = -e 's/-Wp,-D_FORTIFY_SOURCE=[0-9][0-9]*//'
 CCLD = `echo $(CC) | sed $(editcc)`
 CXXLD = `echo $(CXX) | sed $(editcc)`
-COMPILE = `echo $(COMPILE1) | sed $(editcc) $(editcc1)`
+COMPILE = `echo $(COMPILE1) | sed $(editcc) $(editcc1)` \
+	-Wa,-mx86-used-note=no
 LINK = `echo $(LINK1) | sed $(editcc) $(editcc1)`
-CXXCOMPILE = `echo $(CXXCOMPILE1) | sed $(editcc) $(editcc1)`
+CXXCOMPILE = `echo $(CXXCOMPILE1) | sed $(editcc) $(editcc1)` \
+	-Wa,-mx86-used-note=no
 CXXLINK = `echo $(CXXLINK1) | sed $(editcc) $(editcc1)`
 
 # Strip out -static-libgcc and -static-libstdc++ options, for tests

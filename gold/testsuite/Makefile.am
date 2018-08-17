@@ -56,6 +56,8 @@ COMPILE = `echo $(COMPILE1) | sed $(editcc) $(editcc1)`
 LINK = `echo $(LINK1) | sed $(editcc) $(editcc1)`
 CXXCOMPILE = `echo $(CXXCOMPILE1) | sed $(editcc) $(editcc1)`
 CXXLINK = `echo $(CXXLINK1) | sed $(editcc) $(editcc1)`
+COMPILE += -Wa,-mx86-used-note=no
+CXXCOMPILE += -Wa,-mx86-used-note=no
 
 # Strip out -static-libgcc and -static-libstdc++ options, for tests
 # that must have these libraries linked dynamically.  The -shared-libgcc
