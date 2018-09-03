@@ -346,6 +346,7 @@ vfinfo (FILE *fp, const char *fmt, va_list ap, bfd_boolean is_warning)
 		   we cannot find them we print out the section name and
 		   offset instead.  */
 		discard_last = TRUE;
+		abfd->flags |= BFD_LINKER_INPUT;
 		if (abfd != NULL
 		    && bfd_find_nearest_line (abfd, section, asymbols, offset,
 					      &filename, &functionname,

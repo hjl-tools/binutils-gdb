@@ -2839,6 +2839,9 @@ find_abstract_instance (struct comp_unit *   unit,
       total = info_ptr_end - info_ptr;
       if (!die_ref || die_ref >= total)
 	{
+	  /* Bail out if this is a linker input file.  */
+	  if ((unit->abfd->flags & BFD_LINKER_INPUT))
+	    return TRUE;
 	  _bfd_error_handler
 	    (_("DWARF error: invalid abstract instance DIE ref"));
 	  bfd_set_error (bfd_error_bad_value);
