@@ -177,6 +177,19 @@ bad_size:
 	      prop->pr_kind = property_number;
 	      goto next;
 
+	    case GNU_PROPERTY_NEED_PHDRS:
+	      if (datasz != 0)
+		{
+		  _bfd_error_handler
+		    (_("warning: %pB: corrupt need phdrs size: 0x%x"),
+		     abfd, datasz);
+		  /* Clear all properties.  */
+		  elf_properties (abfd) = NULL;
+		  return FALSE;
+		}
+	      /* Ignore GNU_PROPERTY_NEED_PHDRS in input files.  */
+	      goto next;
+
 	    default:
 	      break;
 	    }
@@ -224,6 +237,7 @@ elf_merge_gnu_properties (struct bfd_link_info *info, bfd *abfd,
       /* FALLTHROUGH */
 
     case GNU_PROPERTY_NO_COPY_ON_PROTECTED:
+    case GNU_PROPERTY_NEED_PHDRS:
       /* Return TRUE if APROP is NULL to indicate that BPROP should
 	 be added to ABFD.  */
       return aprop == NULL;
@@ -414,34 +428,62 @@ _bfd_elf_link_setup_gnu_properties (struct bfd_link_info *info)
     = get_elf_backend_data (info->output_bfd);
   unsigned int elfclass = bed->s->elfclass;
   int elf_machine_code = bed->elf_machine_code;
+  bfd_boolean has_text = FALSE;
+  bfd *elf_bfd = NULL;
+  asection *first_psec = NULL;
+  bfd_boolean need_phdrs = FALSE;
 
-  /* Find the first relocatable ELF input with GNU properties.  */
+  /* Find the first relocatable ELF input and the first relocatable ELF
+     input with GNU properties.  Ignore GNU properties from ELF objects
+     with different machine code or class.  */
   for (abfd = info->input_bfds; abfd != NULL; abfd = abfd->link.next)
     if (bfd_get_flavour (abfd) == bfd_target_elf_flavour
 	&& (abfd->flags & DYNAMIC) == 0
-	&& elf_properties (abfd) != NULL)
+	&& (elf_machine_code
+	    == get_elf_backend_data (abfd)->elf_machine_code)
+	&& elfclass == get_elf_backend_data (abfd)->s->elfclass)
       {
-	has_properties = TRUE;
+	elf_bfd = abfd;
 
-	/* Ignore GNU properties from ELF objects with different machine
-	   code or class.  Also skip objects without a GNU_PROPERTY note
-	   section.  */
-	if ((elf_machine_code
-	     == get_elf_backend_data (abfd)->elf_machine_code)
-	    && (elfclass
-		== get_elf_backend_data (abfd)->s->elfclass)
-	    && bfd_get_section_by_name (abfd,
-					NOTE_GNU_PROPERTY_SECTION_NAME) != NULL
-	    )
+	if (!has_text)
 	  {
-	    /* Keep .note.gnu.property section in FIRST_PBFD.  */
-	    first_pbfd = abfd;
-	    break;
+	    /* Check if there is no non-empty text section.  */
+	    sec = bfd_get_section_by_name (abfd, ".text");
+	    if (sec != NULL && sec->size != 0)
+	      has_text = TRUE;
+	  }
+
+	if (elf_properties (abfd) != NULL)
+	  {
+	    has_properties = TRUE;
+
+	    /* Skip objects without a GNU_PROPERTY note section.  */
+	    sec = bfd_get_section_by_name (abfd,
+					   NOTE_GNU_PROPERTY_SECTION_NAME);
+	    if (sec)
+	      {
+		first_psec = sec;
+		/* Keep .note.gnu.property section in FIRST_PBFD.  */
+		first_pbfd = abfd;
+		break;
+	      }
 	  }
       }
 
-  /* Do nothing if there is no .note.gnu.property section.  */
-  if (!has_properties)
+  /* If the separate code program header is needed, make sure
+     that the first read-only PT_LOAD segment has no code by
+     adding a GNU_PROPERTY_NEED_PHDRS property.  */
+  if (has_text
+      && elf_tdata (info->output_bfd)->o->build_id.sec == NULL
+      && !elf_hash_table (info)->dynamic_sections_created
+      && !info->traditional_format
+      && (info->output_bfd->flags & D_PAGED) != 0
+      && info->separate_code)
+    need_phdrs = TRUE;
+
+  /* Do nothing if there is no .note.gnu.property section and we don't
+     need a GNU_PROPERTY_NEED_PHDRS property.  */
+  if (!has_properties && !need_phdrs)
     return NULL;
 
   /* Merge .note.gnu.property sections.  */
@@ -484,15 +526,52 @@ _bfd_elf_link_setup_gnu_properties (struct bfd_link_info *info)
 
   /* Rewrite .note.gnu.property section so that GNU properties are
      always sorted by type even if input GNU properties aren't sorted.  */
-  if (first_pbfd != NULL)
+  if (first_pbfd != NULL || need_phdrs)
     {
       bfd_size_type size;
       bfd_byte *contents;
       unsigned int align_size = elfclass == ELFCLASS64 ? 8 : 4;
 
-      sec = bfd_get_section_by_name (first_pbfd,
-				     NOTE_GNU_PROPERTY_SECTION_NAME);
-      BFD_ASSERT (sec != NULL);
+      if (need_phdrs)
+	{
+	  elf_property *prop;
+
+	  if (first_pbfd)
+	    sec = first_psec;
+	  else
+	    {
+	      /* Create the GNU property note section if needed.  */
+	      sec = bfd_make_section_with_flags (elf_bfd,
+						 NOTE_GNU_PROPERTY_SECTION_NAME,
+						 (SEC_ALLOC
+						  | SEC_LOAD
+						  | SEC_IN_MEMORY
+						  | SEC_READONLY
+						  | SEC_HAS_CONTENTS
+						  | SEC_DATA));
+	      if (sec == NULL)
+		info->callbacks->einfo (_("%F%P: failed to create GNU property section\n"));
+
+	      if (!bfd_set_section_alignment (elf_bfd, sec,
+					      (elfclass == ELFCLASS64
+					       ? 3 : 2)))
+		info->callbacks->einfo (_("%F%pA: failed to align section\n"),
+					first_psec);
+
+	      elf_section_type (sec) = SHT_NOTE;
+	      first_pbfd = elf_bfd;
+	    }
+
+	  if (elf_properties (first_pbfd) == NULL)
+	    {
+	      prop = _bfd_elf_get_property (first_pbfd,
+					    GNU_PROPERTY_NEED_PHDRS,
+					    0);
+	      prop->pr_kind = property_number;
+	    }
+	}
+      else
+	sec = first_psec;
 
       /* Update stack size in .note.gnu.property with -z stack-size=N
 	 if N > 0.  */

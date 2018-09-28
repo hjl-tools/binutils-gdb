@@ -17378,6 +17378,12 @@ print_gnu_property_note (Filedata * filedata, Elf_Internal_Note * pnote)
 		printf (_("<corrupt length: %#x> "), datasz);
 	      goto next;
 
+	    case GNU_PROPERTY_NEED_PHDRS:
+	      printf ("need phdrs ");
+	      if (datasz)
+		printf (_("<corrupt length: %#x> "), datasz);
+	      goto next;
+
 	    default:
 	      break;
 	    }

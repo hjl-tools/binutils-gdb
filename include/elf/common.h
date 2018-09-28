@@ -738,6 +738,7 @@
 /* Values used in GNU .note.gnu.property notes (NT_GNU_PROPERTY_TYPE_0).  */
 #define GNU_PROPERTY_STACK_SIZE			1
 #define GNU_PROPERTY_NO_COPY_ON_PROTECTED	2
+#define GNU_PROPERTY_NEED_PHDRS			3
 
 /* Processor-specific semantics, lo */
 #define GNU_PROPERTY_LOPROC  0xc0000000
