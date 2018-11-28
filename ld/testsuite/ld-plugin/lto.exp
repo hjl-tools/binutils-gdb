@@ -563,6 +563,22 @@ if { [at_least_gcc_version 4 7] } {
 		{} \
 		"pr22721.exe"
 	    ] \
+	    [list \
+		"Build pr23929.o" \
+		"" \
+		"-Wa,-mx86-used-note=no" \
+		{pr23929a.S} \
+		{} \
+	    ] \
+	    [list \
+		"Build pr23929.so" \
+		"-shared -O2 -fpic -flto -fuse-linker-plugin -nostdlib \
+		 -nostartfiles tmpdir/pr23929a.o" \
+		"-fpic -flto -Wa,-mx86-used-note=yes" \
+		{pr23929b.c} \
+		{{readelf {-n --wide} pr23929.d}} \
+		"pr23929.so" \
+	    ] \
 	]
     }
     set testname "PR ld/12942 (3)"
