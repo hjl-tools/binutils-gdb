@@ -6915,6 +6915,14 @@ struct bfd_build_id
     bfd_byte data[1];
   };
 
+enum bfd_lto_object_type
+  {
+    lto_non_object,
+    lto_non_ir_object,
+    lto_ir_object,
+    lto_fat_ir_object
+  };
+
 struct bfd
 {
   /* The filename the application opened the BFD with.  */
@@ -7093,6 +7101,9 @@ struct bfd
 
   /* Set if this is a plugin output file.  */
   unsigned int lto_output : 1;
+
+  /* LTO object type.  */
+  ENUM_BITFIELD (bfd_lto_object_type) lto_type : 2;
 
   /* Set to dummy BFD created when claimed by a compiler plug-in
      library.  */
