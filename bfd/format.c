@@ -47,6 +47,7 @@ SUBSECTION
 #include "bfd.h"
 #include "libbfd.h"
 #if BFD_SUPPORTS_PLUGINS
+#include "libiberty.h"
 #include "plugin-api.h"
 #include "plugin.h"
 #endif
@@ -193,8 +194,9 @@ bfd_preserve_finish (bfd *abfd ATTRIBUTE_UNUSED, struct bfd_preserve *preserve)
 /* Set lto_type in ABFD.  */
 
 static void
-bfd_set_lto_type (bfd *abfd)
+bfd_set_lto_type (bfd *abfd ATTRIBUTE_UNUSED)
 {
+#if BFD_SUPPORTS_PLUGINS
   if (abfd->format == bfd_object
       && abfd->lto_type == lto_non_object
       && (abfd->flags & (DYNAMIC | EXEC_P)) == 0)
@@ -213,8 +215,51 @@ bfd_set_lto_type (bfd *abfd)
 		   && strncmp (sec->name, ".gnu.lto_", 9) == 0)
 	    type = lto_ir_object;
 	}
+
+      /* FIXME: Check if it is a fat IR object.  */
+      if (type == lto_ir_object)
+	{
+	  long symsize;
+
+	  /* Get symbol table size.  */
+	  symsize = bfd_get_symtab_upper_bound (abfd);
+	  if (symsize > 0)
+	    {
+	      asymbol **sympp;
+	      long symcount;
+
+	      /* Read in the symbol table.  */
+	      sympp = (asymbol **) xmalloc (symsize);
+	      symcount = bfd_canonicalize_symtab (abfd, sympp);
+	      if (symcount > 0)
+		{
+		  long count;
+		  const char *name;
+		  bfd_boolean thin_ir_object = FALSE;
+
+		  for (count = 0; count < symcount; count++)
+		    {
+		      name = sympp[count]->name;
+		      if (name[0] == '_'
+			  && name[1] == '_'
+			  && strcmp (name + (name[2] == '_'),
+				     "__gnu_lto_slim") == 0)
+			{
+			  thin_ir_object = TRUE;
+			  break;
+			}
+		    }
+
+		  if (!thin_ir_object)
+		    type = lto_fat_ir_object;
+		}
+	      free (sympp);
+	    }
+	}
+
       abfd->lto_type = type;
     }
+#endif
 }
 
 /*
