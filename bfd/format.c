@@ -46,6 +46,9 @@ SUBSECTION
 #include "sysdep.h"
 #include "bfd.h"
 #include "libbfd.h"
+#if BFD_SUPPORTS_PLUGINS
+#include "libiberty.h"
+#endif
 
 /* IMPORT from targets.c.  */
 extern const size_t _bfd_target_vector_entries;
@@ -186,6 +189,73 @@ bfd_preserve_finish (bfd *abfd ATTRIBUTE_UNUSED, struct bfd_preserve *preserve)
   preserve->marker = NULL;
 }
 
+/* Set lto_type in ABFD.  */
+
+static void
+bfd_set_lto_type (bfd *abfd ATTRIBUTE_UNUSED)
+{
+#if BFD_SUPPORTS_PLUGINS
+  if (abfd->format == bfd_object
+      && abfd->lto_type == lto_non_object
+      && (abfd->flags & (DYNAMIC | EXEC_P)) == 0)
+    {
+      asection *sec;
+      enum bfd_lto_object_type type = lto_non_ir_object;
+      for (sec = abfd->sections; sec != NULL; sec = sec->next)
+	{
+	  if (strncmp (sec->name, ".gnu.lto_", 9) == 0)
+	    {
+	      type = lto_ir_object;
+	      break;
+	    }
+	}
+
+      /* FIXME: Check if it is a fat IR object.  */
+      if (type == lto_ir_object)
+	{
+	  long symsize;
+
+	  /* Get symbol table size.  */
+	  symsize = bfd_get_symtab_upper_bound (abfd);
+	  if (symsize > 0)
+	    {
+	      asymbol **sympp;
+	      long symcount;
+
+	      /* Read in the symbol table.  */
+	      sympp = (asymbol **) xmalloc (symsize);
+	      symcount = bfd_canonicalize_symtab (abfd, sympp);
+	      if (symcount > 0)
+		{
+		  long count;
+		  const char *name;
+		  bfd_boolean thin_ir_object = FALSE;
+
+		  for (count = 0; count < symcount; count++)
+		    {
+		      name = sympp[count]->name;
+		      if (name[0] == '_'
+			  && name[1] == '_'
+			  && strcmp (name + (name[2] == '_'),
+				     "__gnu_lto_slim") == 0)
+			{
+			  thin_ir_object = TRUE;
+			  break;
+			}
+		    }
+
+		  if (!thin_ir_object)
+		    type = lto_fat_ir_object;
+		}
+	      free (sympp);
+	    }
+	}
+
+      abfd->lto_type = type;
+    }
+#endif
+}
+
 /*
 FUNCTION
 	bfd_check_format_matches
@@ -232,7 +302,10 @@ bfd_check_format_matches (bfd *abfd, bfd_format format, char ***matching)
     }
 
   if (abfd->format != bfd_unknown)
-    return abfd->format == format;
+    {
+      bfd_set_lto_type (abfd);
+      return abfd->format == format;
+    }
 
   if (matching != NULL || *bfd_associated_vector != NULL)
     {
@@ -470,6 +543,8 @@ bfd_check_format_matches (bfd *abfd, bfd_format format, char ***matching)
 
       if (matching_vector)
 	free (matching_vector);
+
+      bfd_set_lto_type (abfd);
 
       /* File position has moved, BTW.  */
       return TRUE;
