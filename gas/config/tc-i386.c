@@ -8141,6 +8141,60 @@ output_insn (void)
 	  i.prefix[LOCK_PREFIX] = 0;
 	}
 
+#if defined (OBJ_MAYBE_ELF) || defined (OBJ_ELF)
+      if (operand_check != check_none
+	  && flag_code == CODE_64BIT
+	  && x86_elf_abi == X86_64_X32_ABI)
+	{
+	  if (i.tm.opcode_modifier.vecsib)
+	    {
+	      if (!i.tm.opcode_modifier.vecsibqword
+		  && !i.base_reg
+		  && !i.prefix[SEG_PREFIX])
+		{
+		  unsigned int op;
+		  for (op = 0; op < i.operands; op++)
+		    if (operand_type_check (i.types[op], disp))
+		      break;
+		  if (op == i.operands)
+		    abort ();
+		  switch (i.op[op].disps->X_op)
+		    {
+		    default:
+		      abort ();
+		    case O_constant:
+		      /* Dword indices in VSIB address are sign-extended
+			 to 64 bits.  In x32, add ADDR_PREFIX_OPCODE
+			 prefix for VSIB address of Dword indices without
+			 base register nor symbol so that Dword indices
+			 will be zero-extended to 64 bits.  */
+		      add_prefix (ADDR_PREFIX_OPCODE);
+		      break;
+		    case O_symbol:
+		      break;
+		    }
+		}
+	    }
+	  else if (i.prefix[ADDR_PREFIX] && i.prefix[SEG_PREFIX])
+	    {
+	      /* In x32, we can't have ADDR_PREFIX_OPCODE prefix with
+		 segment override since final address will be segment
+		 base + zero-extended (base + index * scale + disp).  */
+	      const seg_entry *seg;
+	      if (i.seg[0])
+		seg = i.seg[0];
+	      else
+		seg = i.seg[1];
+	      if (operand_check == check_error)
+		as_bad (_("segment `%s%s' override with 32-bit address"),
+			register_prefix, seg->seg_name);
+	      else
+		as_warn (_("segment `%s%s' override with 32-bit address"),
+			 register_prefix, seg->seg_name);
+	    }
+	}
+#endif
+
       /* Since the VEX/EVEX prefix contains the implicit prefix, we
 	 don't need the explicit prefix.  */
       if (!i.tm.opcode_modifier.vex && !i.tm.opcode_modifier.evex)

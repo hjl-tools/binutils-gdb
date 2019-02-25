@@ -538,6 +538,11 @@ enum
 #define VecSIB256	2
 #define VecSIB512	3
   VecSIB,
+  /* Instruction with vector SIB byte:
+	0: Dword indices.
+	1: Qword indices.
+   */
+  VecSIBQword,
   /* SSE to AVX support required */
   SSE2AVX,
   /* No AVX equivalent */
@@ -661,6 +666,7 @@ typedef struct i386_opcode_modifier
   unsigned int vexopcode:3;
   unsigned int vexsources:2;
   unsigned int vecsib:2;
+  unsigned int vecsibqword:1;
   unsigned int sse2avx:1;
   unsigned int noavx:1;
   unsigned int evex:3;
